@@ -40,7 +40,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.evcard.service.Evcard</mainClass>
+                            <mainClass>com.evcard.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

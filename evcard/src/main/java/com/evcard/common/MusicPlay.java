@@ -1,4 +1,4 @@
-package com.evcard.util;
+package com.evcard.common;
 
 import sun.audio.AudioData;
 import sun.audio.AudioPlayer;

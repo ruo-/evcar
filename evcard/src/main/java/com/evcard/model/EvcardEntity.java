@@ -77,7 +77,7 @@ public class EvcardEntity implements Comparable<EvcardEntity>{
                 ", 车牌号='" + vehicleNo + '\'' +
                 ", 车品牌='" + vehicleModelName + '\'' +
                 ", 行驶距离='" + drivingRange + '\'' +
-                ", 状态='" + (status == 1 ? "正常充电中..." : "没有充电") + '\'' +
+                ", 状态='" + (status == 1 ? "正在充电中..." : "没有充电!!!") + '\'' +
                 ", vin='" + vin + '\'' +
                 ", shopSeq='" + shopSeq + '\'' +
                 '}';
