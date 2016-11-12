@@ -134,14 +134,15 @@ public class Main {
                 }
             } else if ("3".equals(select)) {
                 System.out.println("==============开始订车==============");
+                String name,pwd,login;
                 do {
                     System.out.print("请输入用户名:");
-                    String name = input.next();
+                    name = input.next();
 
                     System.out.print("请输入密码:");
-                    String pwd = input.next();
+                    pwd = input.next();
                     //先校验用户名密码
-                    String login = EvcardService.login(name, pwd);
+                    login = EvcardService.login(name, pwd);
                     if (login.contains("用户名或密码错误！")) {
                         System.out.println("==============用户名或密码错误！请重新输入用户名和密码==============");
                     } else {
@@ -177,7 +178,32 @@ public class Main {
                                 System.out.println(evcardEntity);
                             }
                             LoginEntity loginEntity = JSONObject.parseObject(login, LoginEntity.class);
-                            EvcardService.order(loginEntity.getToken(), loginEntity.getAuthId(), evcardEntities.get(0));
+                            String result = EvcardService.order(loginEntity.getToken(), loginEntity.getAuthId(), evcardEntities.get(0));
+                            if (result.contains("登录后进行该操作")) {
+                                System.out.println(result);
+                                System.out.print("请输入用户名:");
+                                name = input.next();
+
+                                System.out.print("请输入密码:");
+                                pwd = input.next();
+                                login = EvcardService.login(name, pwd);
+                            } else {
+                                System.out.println(result);
+                                new Thread(new Runnable() {
+                                    public void run() {
+                                        for (int i = 0; i < 60; i++) {
+                                            System.out.print(i+1 + "秒; ");
+                                            try {
+                                                TimeUnit.SECONDS.sleep(1);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                }).start();
+                                TimeUnit.MINUTES.sleep(1);
+
+                            }
                         }
                     }
 

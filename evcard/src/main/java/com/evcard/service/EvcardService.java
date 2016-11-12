@@ -10,7 +10,6 @@ import com.evcard.model.ResultEntity;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by longwu on 16/11/12.
@@ -51,7 +50,7 @@ public class EvcardService {
      * @param idCard
      * @return
      */
-    public static void order(String token,String idCard,EvcardEntity evcardEntity) {
+    public static String order(String token,String idCard,EvcardEntity evcardEntity) {
         System.out.println("==============开始订车==============");
         //获取登陆token
         String vin = evcardEntity.getVin();
@@ -69,24 +68,6 @@ public class EvcardService {
 
         ResultEntity resultEntity = JSONObject.parseObject(orderRet, ResultEntity.class);
         if ("预订已受理,请等待系统自动确认！".equals(resultEntity.getMessage())) {
-            System.out.println("预定成功!");
-            try {
-                new Thread(new Runnable() {
-                    public void run() {
-                        for (int i = 0; i < 60; i++) {
-                            System.out.print(i+1 + "秒; ");
-                            try {
-                                TimeUnit.SECONDS.sleep(1);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }).start();
-                TimeUnit.MINUTES.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             MusicPlay myMusicPlay = null;
             try {
                 myMusicPlay = new MusicPlay(new URL(Constant.MUSIC_URL));
@@ -94,26 +75,9 @@ public class EvcardService {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
+            return "==========预定成功!==========车辆信息:" +  evcardEntity.toString();
         } else {
-            System.out.println(resultEntity.getMessage() + "请1分钟后重试!");
-            try {
-                new Thread(new Runnable() {
-                    public void run() {
-                        for (int i = 0; i < 60; i++) {
-                            System.out.print(i + 1 + "秒; ");
-                            try {
-                                TimeUnit.SECONDS.sleep(1);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }).start();
-                TimeUnit.MINUTES.sleep(1);
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            return resultEntity.getMessage() + "请1分钟后重试!";
         }
     }
 
