@@ -17,10 +17,7 @@ import org.codehaus.janino.UnicodeUnescapeReader;
 import java.io.*;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,75 +39,105 @@ public class Evcard {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
+        Scanner input = new Scanner(System.in);
+        boolean flag = true;
+        while (flag) {
+            System.out.println("请选择功能:1查询位置码,2订车");
+            String select = input.next();
+            if ("1".equals(select)) {
+                System.out.print("请输入地址:");
+                String address = input.next();
+                System.out.println(QueryAllShopService.getShopCodeByAddress(address));
+            }else if ("2".equals(select)) {
+                flag = false;
+            }
+        }
+
+
         //741  天地软件园
         //897 徐泾社区活动中心
         //933 徐泾政府
-        Scanner input=new Scanner(System.in);
         System.out.print("请输入地址code:");
         String locationCode = input.next();
 
-        System.out.print("请输入用户名:");
-        String name = input.next();
+        while (true) {
+            System.out.print("请输入用户名:");
+            String name = input.next();
 
-        System.out.print("请输入密码:");
-        String pwd = input.next();
+            System.out.print("请输入密码:");
+            String pwd = input.next();
+            //登陆
+            String testLoginParam = "{\"loginName\":" + "\"" + name + "\",\"password\":" + "\"" + pwd + "\"}";
+            String testLoginRet = URLPost(LOGIN_URL, testLoginParam);
+            if (testLoginRet.contains("用户名或密码错误！")) {
+                System.out.println("==============用户名或密码错误！==============");
+            } else {
 
-        while(true){
-            String queryRet;
-            String queryParam = "{\"shopSeq\":" + locationCode + ",\"canRent\":1}";
-            try {
-                queryRet = URLPost(GET_VEHICLE_URL, queryParam);
-                String str = convert(queryRet);
-                List<EvcardEntity> evcardEntities = JSONObject.parseArray(str, EvcardEntity.class);
-                if (evcardEntities.isEmpty()) {
-                    System.out.println(getDateTime());
-                    System.out.println("暂时没有车,5秒后重新查询");
-                    System.out.println();
-                    TimeUnit.SECONDS.sleep(5);
-                    continue;
+                while (true) {
+                    String queryRet;
+                    String queryParam = "{\"shopSeq\":" + locationCode + ",\"canRent\":1}";
+                    try {
+                        queryRet = URLPost(GET_VEHICLE_URL, queryParam);
+                        String str = convert(queryRet);
+                        List<EvcardEntity> evcardEntities = JSONObject.parseArray(str, EvcardEntity.class);
+                        if (evcardEntities.isEmpty()) {
+                            System.out.println(getDateTime());
+                            System.out.println("暂时没有车,5秒后重新查询");
+                            System.out.println();
+                            TimeUnit.SECONDS.sleep(5);
+                            continue;
+                        }
+
+
+                        //登陆
+                        String loginParam = "{\"loginName\":" + "\"" + name + "\",\"password\":" + "\"" + pwd + "\"}";
+                        String loginRet = URLPost(LOGIN_URL, loginParam);
+                        System.out.println(loginRet);
+                        LoginEntity loginEntity = JSONObject.parseObject(loginRet, LoginEntity.class);
+                        //获取登陆token
+                        String token = loginEntity.getToken();
+                        String idCard = loginEntity.getAuthId();
+                        System.out.println(getDateTime());
+                        System.out.println("#############可以预定了!!!#############");
+                        //排序
+                        Collections.sort(evcardEntities);
+                        for (EvcardEntity evcardEntity : evcardEntities) {
+                            System.out.println(evcardEntity);
+                        }
+                        System.out.println();
+                        EvcardEntity evcardEntity = evcardEntities.get(0);
+                        String vin = evcardEntity.getVin();
+                        String shopSeq = evcardEntity.getShopSeq();
+
+
+                        String orderParam = "{\n" +
+                                " \"token\":" + "\"" + token + "\",\n" +
+                                " \"authId\":" + "\"" + idCard + "\",\n" +
+                                " \"planpickupstoreseq\":" + "\"" + shopSeq + "\",\n" +
+                                "\"vin\":" + "\"" + vin + "\"}";
+
+                        String orderRet = URLPost(ORDER_VEHICLE_URL, orderParam);
+                        System.out.println(orderRet);
+
+                        ResultEntity resultEntity = JSONObject.parseObject(orderRet, ResultEntity.class);
+                        if ("预订已受理,请等待系统自动确认！".equals(resultEntity.getMessage())) {
+                            System.out.println("预定成功!");
+                            MusicPlay myMusicPlay = new MusicPlay(new URL(MUSIC_URL));
+                            myMusicPlay.start();//播放一次
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    TimeUnit.MINUTES.sleep(1);
                 }
 
-                //登陆
-                String loginParam = "{\"loginName\":" + "\"" + name + "\",\"password\":" + "\"" + pwd + "\"}";
-                String loginRet = URLPost(LOGIN_URL, loginParam);
-                System.out.println(loginRet);
-                LoginEntity loginEntity = JSONObject.parseObject(loginRet, LoginEntity.class);
-                //获取登陆token
-                String token = loginEntity.getToken();
-                String idCard = loginEntity.getAuthId();
-                System.out.println(getDateTime());
-                System.out.println("#############可以预定了!!!#############");
-                //排序
-                Collections.sort(evcardEntities);
-                for (EvcardEntity evcardEntity : evcardEntities) {
-                    System.out.println(evcardEntity);
-                }
-                System.out.println();
-                EvcardEntity evcardEntity = evcardEntities.get(0);
-                String vin = evcardEntity.getVin();
-                String shopSeq = evcardEntity.getShopSeq();
-
-
-                String orderParam = "{\n" +
-                        " \"token\":" + "\"" + token + "\",\n" +
-                        " \"authId\":" + "\"" + idCard + "\",\n" +
-                        " \"planpickupstoreseq\":" + "\"" + shopSeq + "\",\n" +
-                        "\"vin\":" + "\"" + vin + "\"}";
-
-                String orderRet = URLPost(ORDER_VEHICLE_URL, orderParam);
-                System.out.println(orderRet);
-
-                ResultEntity resultEntity = JSONObject.parseObject(orderRet, ResultEntity.class);
-                if ("预订已受理,请等待系统自动确认！".equals(resultEntity.getMessage())) {
-                    System.out.println("预定成功!");
-                    MusicPlay myMusicPlay = new MusicPlay(new URL(MUSIC_URL));
-                    myMusicPlay.start();//播放一次
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            TimeUnit.MINUTES.sleep(1);
+
         }
+
+
+
+
     }
 
 
