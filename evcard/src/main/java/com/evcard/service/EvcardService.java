@@ -50,7 +50,7 @@ public class EvcardService {
      * @param idCard
      * @return
      */
-    public static String order(String token,String idCard,EvcardEntity evcardEntity) {
+    public static String order(String token,String idCard,EvcardEntity evcardEntity,StringBuilder sucMsg) {
         System.out.println("==============开始订车==============");
         //获取登陆token
         String vin = evcardEntity.getVin();
@@ -68,6 +68,8 @@ public class EvcardService {
 
         ResultEntity resultEntity = JSONObject.parseObject(orderRet, ResultEntity.class);
         if ("预订已受理,请等待系统自动确认！".equals(resultEntity.getMessage())) {
+            sucMsg.append("norderSeq:" + resultEntity.getOrderSeq());
+            sucMsg.append("\n预定车辆信息:\n" + evcardEntity + " \n请速去取车!\n");
             MusicPlay myMusicPlay = null;
             try {
                 myMusicPlay = new MusicPlay(new URL(Constant.MUSIC_URL));
@@ -75,10 +77,24 @@ public class EvcardService {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-            return "==========预定成功!==========车辆信息:" +  evcardEntity.toString();
+            return "预定成功!";
         } else {
             return resultEntity.getMessage() + "请1分钟后重试!";
         }
     }
+
+    public static void cancleOrder(String token, String authId,String orderSeq) {
+        System.out.println("==============开始取消订单==============");
+
+        //取消订单
+        String param = "{\"token\":" + "\"" + token + "\",\"authId\":" + "\"" + authId + "\",\"orderSeq\":" + "\"" + orderSeq + "\"}";
+        String ret =  Util.urlPost(Constant.CANCEL_ORDER_URL, param);
+        if (ret.contains("该订单无法取消，请刷新后再试")) {
+            System.out.println(ret);
+        } else {
+            System.out.println("取消成功!");
+        }
+    }
+
 
 }

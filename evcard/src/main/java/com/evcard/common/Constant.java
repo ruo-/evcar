@@ -17,6 +17,9 @@ public interface Constant {
 
     String MUSIC_URL = "http://xunlei.sc.chinaz.com/files/download/sound1/201404/4331.wav";
 
+    String CANCEL_ORDER_URL = "http://api.evcard.online:8082/isv2/evcardapp?service=cancleOrderVehicle";
+    String GET_ORDER_LIST_URL = "http://www.evcardchina.com/api/proxy/getOrderList";
+
     String PWD = "longwuX";
     String USER_NAME = "13918793429";
 }
