@@ -1,6 +1,7 @@
 package com.evcard;
 
 import com.alibaba.fastjson.JSONObject;
+import com.evcard.common.Constant;
 import com.evcard.common.Util;
 import com.evcard.model.EvcardEntity;
 import com.evcard.model.LoginEntity;
@@ -138,9 +139,14 @@ public class Main {
                 do {
                     System.out.print("请输入用户名:");
                     name = input.next();
+                    if ("admin".equals(name)) {
+                        name = Constant.USER_NAME;
+                        pwd = Constant.PWD;
+                    } else {
+                        System.out.print("请输入密码:");
+                        pwd = input.next();
+                    }
 
-                    System.out.print("请输入密码:");
-                    pwd = input.next();
                     //先校验用户名密码
                     login = EvcardService.login(name, pwd);
                     if (login.contains("用户名或密码错误！")) {
@@ -183,9 +189,14 @@ public class Main {
                                 System.out.println(result);
                                 System.out.print("请输入用户名:");
                                 name = input.next();
+                                if ("admin".equals(name)) {
+                                    name = Constant.USER_NAME;
+                                    pwd = Constant.PWD;
+                                } else {
+                                    System.out.print("请输入密码:");
+                                    pwd = input.next();
+                                }
 
-                                System.out.print("请输入密码:");
-                                pwd = input.next();
                                 login = EvcardService.login(name, pwd);
                             } else {
                                 System.out.println(result);
