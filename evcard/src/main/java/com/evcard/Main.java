@@ -1,10 +1,10 @@
 package com.evcard;
 
 import com.alibaba.fastjson.JSONObject;
-import com.evcard.common.Constant;
 import com.evcard.common.Util;
 import com.evcard.model.EvcardEntity;
 import com.evcard.model.LoginEntity;
+import com.evcard.service.CustomService;
 import com.evcard.service.EvcardService;
 import com.evcard.service.QueryAllShopService;
 
@@ -67,14 +67,21 @@ public class Main {
                 }
             } else if ("3".equals(select)) {
                 System.out.println("==============开始订车==============");
-                String name, pwd, login;
+                String name, pwd = "", login;
                 do {
                     System.out.print("【请输入用户名:】");
                     name = input.next();
-                    if ("admin".equals(name)) {
-                        name = Constant.USER_NAME;
-                        pwd = Constant.PWD;
-                    } else {
+                    //定制化服务,超管不需要输入密码
+                    List<CustomService> list = CustomService.getCustomeService();
+                    boolean custom = false;
+                    for (CustomService customService : list) {
+                        if (customService.getKey().equals(name)) {
+                            name = customService.getName();
+                            pwd = customService.getPwd();
+                            custom = true;
+                        }
+                    }
+                    if (!custom) {
                         System.out.print("【请输入密码:】");
                         pwd = input.next();
                     }
@@ -136,17 +143,7 @@ public class Main {
 
                             String result = EvcardService.order(loginEntity.getToken(), loginEntity.getAuthId(), orderEntity, sucMsg);
                             if (result.contains("登录后进行该操作")) {
-                                System.out.println(result);
-                                System.out.print("【请输入用户名:】");
-                                name = input.next();
-                                if ("admin".equals(name)) {
-                                    name = Constant.USER_NAME;
-                                    pwd = Constant.PWD;
-                                } else {
-                                    System.out.print("【请输入密码:】");
-                                    pwd = input.next();
-                                }
-
+                                System.out.println("用户被踢出,重新登录!!!");
                                 login = EvcardService.login(name, pwd);
                             } else {
                                 System.out.println("==========预定成功!==========");
@@ -176,13 +173,21 @@ public class Main {
                 } while (true);
 
             } else if ("4".equals(select)) {
-                String name, pwd, login;
+                String name, pwd="", login;
                 System.out.print("【请输入用户名:】");
                 name = input.next();
-                if ("admin".equals(name)) {
-                    name = Constant.USER_NAME;
-                    pwd = Constant.PWD;
-                } else {
+
+                //定制化服务,超管不需要输入密码
+                List<CustomService> list = CustomService.getCustomeService();
+                boolean custom = false;
+                for (CustomService customService : list) {
+                    if (customService.getKey().equals(name)) {
+                        name = customService.getName();
+                        pwd = customService.getPwd();
+                        custom = true;
+                    }
+                }
+                if (!custom) {
                     System.out.print("【请输入密码:】");
                     pwd = input.next();
                 }
